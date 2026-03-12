@@ -1,0 +1,234 @@
+# DRL Stock Trading System - Git Ignore Rules
+
+# ========== Data Files ==========
+*.csv
+*.pkl
+*.pth
+*.h5
+*.hdf5
+*.npy
+*.npz
+
+# ========== Experiment Results ==========
+# Keep experiment directories but ignore large binary files inside them
+*experiment*/models/*.pth
+*experiment*/checkpoints/*.pth
+*_experiment/models/*.pth
+*_experiment/checkpoints/*.pth
+
+# ========== Python ==========
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+env.bak/
+venv.bak/
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+.pybuilder/
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+# .python-version is used by pyenv to indicate a python version
+.python-version
+
+# pipenv
+# According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
+# However, in case of collaboration, if having platform-specific dependencies or dependencies
+# having no cross-platform support, pipenv may install dependencies that don't work, or not
+# install all needed dependencies.
+#Pipfile.lock
+
+# poetry
+#poetry.lock
+
+# pdm
+.pdm.toml
+
+# pdm backend
+.pdm-build/
+
+# PEP 582; used by e.g. github.com/David-OConnor/pyflow
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# ========== System Files ==========
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Windows
+desktop.ini
+
+# Linux
+*~
+
+# ========== IDE ==========
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iml
+*.iws
+
+# Eclipse
+.project
+.pydevproject
+.settings/
+
+# Sublime Text
+*.sublime-*
+
+# ========== Backup Files ==========
+*.bak
+*.tmp
+*.temp
+*~
+*.old
+*.orig
+*.rej
+
+# ========== Logs ==========
+*.log
+logs/
+*/logs/
+*.log.*
+
+# ========== Temporary Files ==========
+*.tmp
+*.temp
+.cache/
+
+# ========== Custom Project Specific ==========
+# Backup directories (already cleaned up)
+backup_*/
+
+# Large experiment data (keep directory structure but not binary files)
+*/models/*.pth
+*/checkpoints/*.pth
+
+# Keep the experiment directories and config files, just ignore large binaries

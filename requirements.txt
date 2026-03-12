@@ -1,0 +1,59 @@
+# Core Dependencies for DRL Trading System
+# Author: Big Dog (Electronic Brother)
+# Date: 2026-03-12
+
+# Core data processing
+pandas>=2.0.0
+numpy>=1.24.0
+scikit-learn>=1.3.0
+
+# Machine learning & deep learning
+torch>=2.0.0
+torchvision>=0.15.0
+
+# Data fetching
+yfinance>=0.2.0
+
+# Sentiment analysis (offline-capable)
+nltk>=3.8.0
+textblob>=0.17.0
+
+# Feature engineering
+ta>=0.10.0  # Technical analysis library
+
+# Reinforcement learning environment
+gymnasium>=0.29.0  # Replacement for gym (recommended)
+# gym>=0.26.0  # Legacy support (not recommended)
+
+# Visualization
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# Statistical analysis
+scipy>=1.11.0
+statsmodels>=0.14.0
+
+# Utilities
+tqdm>=4.65.0
+joblib>=1.3.0
+
+# Optional: For advanced sentiment analysis (requires internet)
+# transformers>=4.35.0
+# sentence-transformers>=2.2.0
+
+# Optional: For news data (requires API key)
+# newsapi-python>=0.2.6
+
+# Development tools
+pytest>=7.4.0
+black>=23.0.0
+flake8>=6.0.0
+
+# Installation command:
+# pip install -r requirements.txt
+
+# For offline installation (save packages):
+# pip download -r requirements.txt -d packages/
+
+# For installing from local packages:
+# pip install --no-index --find-links=packages/ -r requirements.txt
