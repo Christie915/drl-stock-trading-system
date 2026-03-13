@@ -138,12 +138,16 @@ class StockTradingEnv(gym.Env):
         self.total_transaction_cost = None
         self.state_history = None
         self.portfolio_history = None
+        self.debug_printed = False  # For debug logging
         
         self.logger.info(f"Trading environment initialized:")
         self.logger.info(f"  State dimension: {self.state_dim}")
         self.logger.info(f"  Data points: {len(self.price_features)}")
         self.logger.info(f"  Window size: {window_size}")
         self.logger.info(f"  Reward weights: α={alpha}, β={beta}, γ={gamma}, δ={delta}")
+        self.logger.info(f"  DEBUG: Price features: {len(self.price_features.columns)}")
+        self.logger.info(f"  DEBUG: Sentiment features: {len(self.sentiment_features.columns)}")
+        self.logger.info(f"  DEBUG: Total features per timestep: {len(self.price_features.columns) + len(self.sentiment_features.columns)}")
     
     def _identify_price_column(self) -> str:
         """Identify the price column in features"""
@@ -167,7 +171,19 @@ class StockTradingEnv(gym.Env):
         # Portfolio state features
         n_portfolio_features = 5  # balance, shares, net_worth, position_pct, trade_count
         
-        return n_historical_features + n_portfolio_features
+        total_dim = n_historical_features + n_portfolio_features
+        
+        # Debug logging
+        if self.logger:
+            self.logger.debug(f"DEBUG _calculate_state_dimension:")
+            self.logger.debug(f"  n_price_features: {n_price_features}")
+            self.logger.debug(f"  n_sentiment_features: {n_sentiment_features}")
+            self.logger.debug(f"  window_size: {self.window_size}")
+            self.logger.debug(f"  n_historical_features: {n_historical_features}")
+            self.logger.debug(f"  n_portfolio_features: {n_portfolio_features}")
+            self.logger.debug(f"  total_dim: {total_dim}")
+        
+        return total_dim
     
     def reset(self) -> np.ndarray:
         """
@@ -219,6 +235,16 @@ class StockTradingEnv(gym.Env):
         # Flatten historical window
         historical_state = np.array(self.state_history).flatten()
         
+        # DEBUG: Print dimensions
+        if hasattr(self, 'debug_printed') and not self.debug_printed:
+            self.debug_printed = True
+            if self.logger:
+                self.logger.info(f"DEBUG: state_history length: {len(self.state_history)}")
+                if len(self.state_history) > 0:
+                    self.logger.info(f"DEBUG: state_history[0] shape: {self.state_history[0].shape}")
+                    self.logger.info(f"DEBUG: Combined state length: {len(self.state_history[0])}")
+                self.logger.info(f"DEBUG: Flattened historical state shape: {historical_state.shape}")
+        
         # Current price
         current_price = self._get_current_price()
         
@@ -239,6 +265,10 @@ class StockTradingEnv(gym.Env):
         
         # Combine
         observation = np.concatenate([historical_state, portfolio_state])
+        
+        # DEBUG: Print final observation dimension
+        if hasattr(self, 'debug_printed') and self.debug_printed:
+            self.logger.info(f"DEBUG: Final observation dimension: {len(observation)}")
         
         return observation
     

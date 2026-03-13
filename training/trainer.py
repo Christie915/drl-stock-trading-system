@@ -284,13 +284,55 @@ class DRLTrainer:
                 # Time series split
                 train_ratio = self.config['train_ratio']
                 val_ratio = self.config['val_ratio']
+                test_ratio = self.config.get('test_ratio', 0.15)  # Default to 0.15 if not specified
                 
                 train_idx = int(len(combined_features) * train_ratio)
                 val_idx = train_idx + int(len(combined_features) * val_ratio)
                 
-                self.training_data = combined_features.iloc[:train_idx]
-                self.validation_data = combined_features.iloc[train_idx:val_idx]
-                self.test_data = combined_features.iloc[val_idx:]
+                # Handle test ratio of 0 or very small
+                if test_ratio <= 0.001:  # Effectively 0
+                    # All remaining data goes to validation if test_ratio is 0
+                    self.training_data = combined_features.iloc[:train_idx]
+                    self.validation_data = combined_features.iloc[train_idx:]
+                    self.test_data = pd.DataFrame()
+                else:
+                    self.training_data = combined_features.iloc[:train_idx]
+                    self.validation_data = combined_features.iloc[train_idx:val_idx]
+                    self.test_data = combined_features.iloc[val_idx:]
+                    
+                    # If test data is too small (less than window_size), merge it into validation
+                    window_size = self.config.get('window_size', 10)
+                    if len(self.test_data) < window_size:
+                        self.logger.warning(f"Test data too small ({len(self.test_data)} rows < window_size {window_size}). Merging into validation data.")
+                        self.validation_data = pd.concat([self.validation_data, self.test_data])
+                        self.test_data = pd.DataFrame()
+            
+            # Save feature configuration for consistent backtesting
+            try:
+                import torch
+                import os
+                
+                # Create feature configuration
+                feature_config = {
+                    'feature_columns': combined_features.columns.tolist(),
+                    'feature_count': len(combined_features.columns),
+                    'window_size': self.config.get('window_size', 10),
+                    'state_dimension': (len(combined_features.columns) * self.config.get('window_size', 10)) + 5,
+                    'price_feature_columns': price_features.columns.tolist() if 'price_features' in locals() else [],
+                    'sentiment_feature_columns': sentiment_features.columns.tolist() if 'sentiment_features' in locals() else []
+                }
+                
+                # Save to model directory
+                output_dir = self.config.get('output_dir', 'output')
+                feature_config_path = os.path.join(output_dir, 'feature_config.pth')
+                
+                torch.save(feature_config, feature_config_path)
+                self.logger.info(f"Feature configuration saved to {feature_config_path}")
+                self.logger.info(f"Total features: {len(combined_features.columns)}")
+                self.logger.info(f"Expected state dimension: {feature_config['state_dimension']}")
+                
+            except Exception as e:
+                self.logger.warning(f"Failed to save feature configuration: {e}")
             
             self.logger.info(f"Data split: Train={len(self.training_data)}, Val={len(self.validation_data)}, Test={len(self.test_data)}")
             
@@ -344,40 +386,19 @@ class DRLTrainer:
                 logger=self.logger
             )
             
-            # Validation environment
-            self.logger.info("Creating validation environment...")
-            price_features_val = self.validation_data[price_cols]
-            sentiment_features_val = self.validation_data[sentiment_cols] if sentiment_cols else pd.DataFrame()
-            
-            self.env_val = create_trading_environment(
-                price_features=price_features_val,
-                sentiment_features=sentiment_features_val,
-                config={
-                    'initial_balance': self.config['initial_balance'],
-                    'window_size': self.config['window_size'],
-                    'transaction_cost': self.config['transaction_cost'],
-                    'alpha': self.config['alpha'],
-                    'beta': self.config['beta'],
-                    'gamma': self.config['gamma'],
-                    'delta': self.config['delta'],
-                    'max_position_pct': self.config['max_position_pct'],
-                    'max_daily_trades': self.config['max_daily_trades']
-                },
-                logger=self.logger
-            )
-            
-            # Test environment (optional)
-            if self.test_data is not None:
-                self.logger.info("Creating test environment...")
-                price_features_test = self.test_data[price_cols]
-                sentiment_features_test = self.test_data[sentiment_cols] if sentiment_cols else pd.DataFrame()
+            # Validation environment (only create if enough data)
+            window_size = self.config.get('window_size', 10)
+            if len(self.validation_data) > window_size:
+                self.logger.info("Creating validation environment...")
+                price_features_val = self.validation_data[price_cols]
+                sentiment_features_val = self.validation_data[sentiment_cols] if sentiment_cols else pd.DataFrame()
                 
-                self.env_test = create_trading_environment(
-                    price_features=price_features_test,
-                    sentiment_features=sentiment_features_test,
+                self.env_val = create_trading_environment(
+                    price_features=price_features_val,
+                    sentiment_features=sentiment_features_val,
                     config={
                         'initial_balance': self.config['initial_balance'],
-                        'window_size': self.config['window_size'],
+                        'window_size': window_size,
                         'transaction_cost': self.config['transaction_cost'],
                         'alpha': self.config['alpha'],
                         'beta': self.config['beta'],
@@ -388,6 +409,37 @@ class DRLTrainer:
                     },
                     logger=self.logger
                 )
+            else:
+                self.logger.warning(f"Validation data too small ({len(self.validation_data)} rows <= window_size {window_size}). Skipping validation environment.")
+                self.env_val = None
+            
+            # Test environment (only create if enough data)
+            if self.test_data is not None and len(self.test_data) > window_size:
+                self.logger.info("Creating test environment...")
+                price_features_test = self.test_data[price_cols]
+                sentiment_features_test = self.test_data[sentiment_cols] if sentiment_cols else pd.DataFrame()
+                
+                self.env_test = create_trading_environment(
+                    price_features=price_features_test,
+                    sentiment_features=sentiment_features_test,
+                    config={
+                        'initial_balance': self.config['initial_balance'],
+                        'window_size': window_size,
+                        'transaction_cost': self.config['transaction_cost'],
+                        'alpha': self.config['alpha'],
+                        'beta': self.config['beta'],
+                        'gamma': self.config['gamma'],
+                        'delta': self.config['delta'],
+                        'max_position_pct': self.config['max_position_pct'],
+                        'max_daily_trades': self.config['max_daily_trades']
+                    },
+                    logger=self.logger
+                )
+            elif self.test_data is not None and len(self.test_data) > 0:
+                self.logger.warning(f"Test data too small ({len(self.test_data)} rows <= window_size {window_size}). Skipping test environment.")
+                self.env_test = None
+            else:
+                self.env_test = None
             
             # Create agent
             state_dim = self.env_train.observation_space.shape[0]

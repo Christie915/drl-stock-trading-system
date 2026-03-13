@@ -250,8 +250,14 @@ class Backtester:
         """
         self.logger.info("Comparing with baseline strategies")
         
+        # Create a simplified version of drl_results for comparison (only performance metrics)
+        # Avoid data duplication - portfolio_history and other large data structures are in backtest_results
+        simplified_drl = {
+            'performance_metrics': drl_results.get('performance_metrics', {})
+        }
+        
         comparison = {
-            'drl_strategy': drl_results,
+            'drl_strategy': simplified_drl,
             'baselines': baseline_results,
             'comparison_metrics': {}
         }
@@ -581,13 +587,16 @@ class Backtester:
             'summary': self._generate_summary(results)
         }
         
+        # Convert NumPy types to Python native types for JSON serialization
+        serializable_report = self._convert_to_serializable(report)
+        
         # Save report
         with open(output_path, 'w') as f:
-            json.dump(report, f, indent=2)
+            json.dump(serializable_report, f, indent=2)
         
         self.logger.info(f"Backtest report saved: {output_path}")
         
-        return report
+        return serializable_report
     
     def _generate_summary(self, results: Dict[str, Any]) -> Dict[str, Any]:
         """Generate summary of backtest results"""
@@ -604,6 +613,32 @@ class Backtester:
         }
         
         return summary
+    
+    @staticmethod
+    def _convert_to_serializable(obj):
+        """
+        Convert NumPy types to Python native types for JSON serialization
+        
+        Args:
+            obj: Any object
+            
+        Returns:
+            Object with NumPy types converted to Python types
+        """
+        if isinstance(obj, (np.integer, np.int64, np.int32, np.int16, np.int8)):
+            return int(obj)
+        elif isinstance(obj, (np.floating, np.float64, np.float32, np.float16)):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        elif isinstance(obj, np.bool_):
+            return bool(obj)
+        elif isinstance(obj, dict):
+            return {key: Backtester._convert_to_serializable(value) for key, value in obj.items()}
+        elif isinstance(obj, (list, tuple)):
+            return [Backtester._convert_to_serializable(item) for item in obj]
+        else:
+            return obj
 
 
 # Quick demo
@@ -669,6 +704,7 @@ if __name__ == "__main__":
         portfolio_df = pd.DataFrame(mock_results['portfolio_history'])
         metrics = backtester._calculate_performance_metrics(portfolio_df, 10000)
         mock_results['performance_metrics'] = metrics
+        mock_results['total_trades'] = metrics.get('total_trades', 0)
     
     print(f"   Backtest completed: Total Return={mock_results['performance_metrics'].get('total_return_pct', 0):.2f}%")
     

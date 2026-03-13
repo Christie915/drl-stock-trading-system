@@ -1,0 +1,27 @@
+
+        ========================================
+        INDEPENDENT BACKTEST RESULTS (2025 DATA)
+        ========================================
+        
+        Training Period: 2022-01-01 to 2024-12-31
+        Backtest Period: 2025-01-01 to 2025-12-31
+        
+        Key Metrics:
+        -----------
+        Total Return: 8.83%
+        Max Drawdown: -14.39%
+        Sharpe Ratio: 0.045
+        Total Trades: 2
+        Final Net Worth: $10882.61
+        
+        Action Distribution:
+        -------------------
+        Buy: 0
+        Sell: 2
+        Hold: 236
+        
+        Model: best_model_ep0_20260313_180305.pth
+        Backtest Time: 33.7 seconds
+        
+        ========================================
+        

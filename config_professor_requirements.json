@@ -1,0 +1,53 @@
+{
+  "ticker": "AAPL",
+  
+  "train_start_date": "2022-01-01",
+  "train_end_date": "2024-12-31",
+  
+  "backtest_start_date": "2025-01-01",
+  "backtest_end_date": "2025-12-31",
+  
+  "train_val_test_split": false,
+  "window_size": 10,
+  "initial_balance": 10000,
+  "transaction_cost": 0.001,
+  
+  "reward_params": {
+    "alpha": 2.0,
+    "beta": 0.05,
+    "gamma": 0.5,
+    "delta": 0.01
+  },
+  
+  "trading_params": {
+    "sentiment_threshold": 0.2,
+    "max_position_pct": 0.05,
+    "max_daily_trades": 10
+  },
+  
+  "training_params": {
+    "episodes": 300,
+    "early_stop_patience": 30,
+    "batch_size": 64,
+    "learning_rate": 0.0001,
+    "gamma_discount": 0.99,
+    "entropy_coef": 0.01,
+    "use_replay": true,
+    "replay_capacity": 10000
+  },
+  
+  "model_params": {
+    "hidden_dim": 256,
+    "num_layers": 3,
+    "dropout_rate": 0.2,
+    "weight_decay": 1e-05
+  },
+  
+  "output_params": {
+    "output_dir": "professor_experiment",
+    "save_checkpoints": true,
+    "checkpoint_interval": 10,
+    "log_interval": 10,
+    "visualize_training": true
+  }
+}
